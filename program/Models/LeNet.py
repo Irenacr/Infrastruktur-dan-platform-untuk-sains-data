@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class Lenet(nn.Module):
+class simplecnn(nn.Module):
     def __init__(self, num_classes=6):
-        super(Lenet, self).__init__()
+        super(simplecnn, self).__init__()
         self.conv1 = nn.Conv2d(3, 6, kernel_size=5)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(6, 16, kernel_size=5)

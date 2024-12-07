@@ -6,7 +6,7 @@ from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, r
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from Models.LeNet import LeNet
+from Models.simplecnn import simplecnn
 from Utils.getData import Data
 
 def evaluate_model(model, data_loader):
@@ -73,7 +73,7 @@ def main():
     test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False)
 
     # model LeNet
-    model = LeNet(num_classes=NUM_CLASSES)
+    model = simplecnn(num_classes=NUM_CLASSES)
 
     # Memuat model dengan aman (menambahkan weights_only=True untuk mencegah potensi masalah di masa depan)
     model.load_state_dict(torch.load("trained_model4.pth", map_location=torch.device('cpu'), weights_only=True))  # map_location jika Anda menggunakan CPU

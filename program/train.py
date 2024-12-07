@@ -7,85 +7,91 @@ from Models.LeNet import LeNet
 from Utils.getData import Data
 
 def main():
-    BATCH_SIZE = 4
-    EPOCH = 20
-    LEARNING_RATE = 0.001
-    NUM_CLASSES = 6
+    # Variabel utama
+    b_size = 4
+    epc = 20
+    lr = 0.001
+    n_cls = 6
 
-    # Paths to dataset
-    aug_path = "C:/Users/Ideapad slim 3/Documents/infrastruktur data/tugas_infrasntruktur_teori/Tugas/dataset/Augmented Images/FOLDS_AUG/"
-    orig_path = "C:/Users/Ideapad slim 3/Documents/infrastruktur data/tugas_infrasntruktur_teori/Tugas/dataset/Original Images/FOLDS/"
-    dataset = Data(base_folder_aug=aug_path, base_folder_orig=orig_path)
+    # Path dataset
+    aug = "C:/Users/Ideapad slim 3/Documents/infrastruktur data/tugas_infrasntruktur_teori/Tugas/dataset/Augmented Images/FOLDS_AUG/"
+    orig = "C:/Users/Ideapad slim 3/Documents/infrastruktur data/tugas_infrasntruktur_teori/Tugas/dataset/Original Images/FOLDS/"
+    dt = Data(base_folder_aug=aug, base_folder_orig=orig)
 
-    train_data = dataset.dataset_train + dataset.dataset_aug
-    val_data = dataset.dataset_valid  # Tambahkan data validasi
-    train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
-    val_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=False)
+    # Gabung dataset
+    train_d = dt.dataset_train + dt.dataset_aug
+    val_d = dt.dataset_valid
+    t_loader = DataLoader(train_d, batch_size=b_size, shuffle=True)
+    v_loader = DataLoader(val_d, batch_size=b_size, shuffle=False)
 
-    # LeNet model
-    model = LeNet(num_classes=NUM_CLASSES)
+    # Inisialisasi model
+    net = LeNet(num_classes=n_cls)
 
-    # loss function and optimizer
-    loss_fn = nn.CrossEntropyLoss()  # Suitable for multi-class classification
-    optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE)
+    # Inisialisasi fungsi loss dan optim
+    loss = nn.CrossEntropyLoss()
+    optimz = optim.SGD(net.parameters(), lr=lr)
 
-    train_losses = []
-    val_losses = []
+    # Tracking loss
+    trn_loss = []
+    vld_loss = []
 
-    for epoch in range(EPOCH):
-        # Training loop
-        model.train()
-        loss_train = 0.0
-        correct_train = 0
-        total_train = 0
+    for e in range(epc):
+        net.train()  # Training mode
+        total_loss = 0
+        c_train = 0
+        t_train = 0
 
-        for src, trg in train_loader:
-            src = src.permute(0, 3, 1, 2).float()  
-            trg = torch.argmax(trg, dim=1)
+        # Loop batch
+        for x, y in t_loader:
+            x = x.permute(0, 3, 1, 2).float()
+            y = torch.argmax(y, dim=1)
 
-            pred = model(src)
-            loss = loss_fn(pred, trg)
+            # Forward pass
+            o = net(x)
+            l = loss(o, y)
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+            # Backward
+            optimz.zero_grad()
+            l.backward()
+            optimz.step()
 
-            loss_train += loss.item()
-            _, predicted = torch.max(pred, 1)
-            total_train += trg.size(0)
-            correct_train += (predicted == trg).sum().item()
+            total_loss += l.item()
+            _, pred = torch.max(o, 1)
+            t_train += y.size(0)
+            c_train += (pred == y).sum().item()
 
-        train_losses.append(loss_train / len(train_loader))
+        # Simpan loss pelatihan
+        trn_loss.append(total_loss / len(t_loader))
 
-        # Validation loop
-        model.eval()
-        loss_val = 0.0
+        # Validasi
+        net.eval()
+        v_loss = 0
         with torch.no_grad():
-            for src, trg in val_loader:
-                src = src.permute(0, 3, 1, 2).float()
-                trg = torch.argmax(trg, dim=1)
+            for x, y in v_loader:
+                x = x.permute(0, 3, 1, 2).float()
+                y = torch.argmax(y, dim=1)
 
-                pred = model(src)
-                loss = loss_fn(pred, trg)
-                loss_val += loss.item()
+                o = net(x)
+                l = loss(o, y)
+                v_loss += l.item()
 
-        val_losses.append(loss_val / len(val_loader))
+        vld_loss.append(v_loss / len(v_loader))
 
-        print(f"Epoch [{epoch + 1}/{EPOCH}] | Train Loss: {loss_train / len(train_loader):.4f} | Val Loss: {loss_val / len(val_loader):.4f}")
+        print(f"Ep {e+1}/{epc} | Train L: {total_loss / len(t_loader):.4f} | Val L: {v_loss / len(v_loader):.4f}")
 
     # Save model
-    torch.save(model.state_dict(), "trained_model4.pth")
+    torch.save(net.state_dict(), "model_final.pth")
 
-    # Plot training and validation loss
-    plt.figure(figsize=(10, 6))
-    plt.plot(range(EPOCH), train_losses, color="#3399e6", label="Training Loss")
-    plt.plot(range(EPOCH), val_losses, color="#ff6666", label="Validation Loss")
+    # Plot loss
+    plt.figure(figsize=(10, 5))
+    plt.plot(range(epc), trn_loss, "b-", label="Train")
+    plt.plot(range(epc), vld_loss, "r-", label="Val")
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
-    plt.title("Training and Validation Loss")
+    plt.title("Train vs Val Loss")
     plt.legend()
     plt.grid()
-    plt.savefig("training.png")
+    plt.savefig("loss_plot.png")
     plt.show()
 
 if __name__ == "__main__":

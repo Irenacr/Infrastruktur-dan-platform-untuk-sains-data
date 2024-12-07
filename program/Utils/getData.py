@@ -14,9 +14,9 @@ class Data(Dataset):
         self.dataset_train = []
         self.dataset_test = []
         self.dataset_valid = []
-        onehot = np.eye(6)  # One-hot encoding untuk 6 kelas
+        onehot = np.eye(6) 
         
-        # Load data dari Augmented Images (Train saja)
+        # Load data dari Augmented Images (Train)
         for fold_num in range(1, 6):
             aug_folder = os.path.join(base_folder_aug, f"fold{fold_num}_AUG/Train/")
             for class_idx, class_name in enumerate(os.listdir(aug_folder)):
@@ -30,7 +30,7 @@ class Data(Dataset):
         for fold_num in range(1, 6):
             fold_folder = os.path.join(base_folder_orig, f"fold{fold_num}/")
             
-            # Load Train
+            # Load data Train
             train_folder = os.path.join(fold_folder, "Train/")
             for class_idx, class_name in enumerate(os.listdir(train_folder)):
                 class_folder = os.path.join(train_folder, class_name)
@@ -39,7 +39,7 @@ class Data(Dataset):
                     image = cv.resize(cv.imread(img_path), (32, 32)) / 255
                     self.dataset_train.append([image, onehot[class_idx]])
 
-            # Load Test
+            # Load data Test
             test_folder = os.path.join(fold_folder, "Test/")
             for class_idx, class_name in enumerate(os.listdir(test_folder)):
                 class_folder = os.path.join(test_folder, class_name)
@@ -48,7 +48,7 @@ class Data(Dataset):
                     image = cv.resize(cv.imread(img_path), (32, 32)) / 255
                     self.dataset_test.append([image, onehot[class_idx]])
 
-            # Load Valid
+            # Load data Valid
             valid_folder = os.path.join(fold_folder, "Valid/")
             for class_idx, class_name in enumerate(os.listdir(valid_folder)):
                 class_folder = os.path.join(valid_folder, class_name)
@@ -57,7 +57,6 @@ class Data(Dataset):
                     image = cv.resize(cv.imread(img_path), (32, 32)) / 255
                     self.dataset_valid.append([image, onehot[class_idx]])
         
-       
         print(f"Augmented Images (Train): {len(self.dataset_aug)}")
         print(f"Original Images (Train): {len(self.dataset_train)}")
         print(f"Original Images (Test): {len(self.dataset_test)}")
@@ -73,15 +72,15 @@ class Data(Dataset):
         :return: Tuple (image, label) dalam format tensor
         """
         features, label = self.dataset_aug[idx]
-        return (torch.tensor(features, dtype=torch.float32).permute(2, 0, 1),  # Convert to CHW format
+        return (torch.tensor(features, dtype=torch.float32).permute(2, 0, 1),
                 torch.tensor(label, dtype=torch.float32))
 
 
 if __name__ == "__main__":
-    # Paths ke dataset
     aug_path = "C:/Users/Ideapad slim 3/Documents/infrastruktur data/tugas_infrasntruktur_teori/Tugas/dataset/Augmented Images/FOLDS_AUG/"
     orig_path = "C:/Users/Ideapad slim 3/Documents/infrastruktur data/tugas_infrasntruktur_teori/Tugas/dataset/Original Images/FOLDS/"
-    # Inisialisasi Data
+
+    
     data = Data(base_folder_aug=aug_path, base_folder_orig=orig_path)
     
    

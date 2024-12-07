@@ -53,7 +53,7 @@ def plot_confusion_matrix(cm, class_names, save_path="confusion_matrix.png"):
     :param save_path: Path untuk menyimpan heatmap
     """
     plt.figure(figsize=(8, 6))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
+    sns.heatmap(cm, annot=True, fmt='d', cmap='magma', xticklabels=class_names, yticklabels=class_names)
     plt.xlabel("Predicted Labels")
     plt.ylabel("True Labels")
     plt.title("Confusion Matrix")
@@ -68,7 +68,6 @@ def main():
     aug_path = "C:/Users/Ideapad slim 3/Documents/infrastruktur data/tugas_infrasntruktur_teori/Tugas/dataset/Augmented Images/FOLDS_AUG/"
     orig_path = "C:/Users/Ideapad slim 3/Documents/infrastruktur data/tugas_infrasntruktur_teori/Tugas/dataset/Original Images/FOLDS/"
 
-
     dataset = Data(base_folder_aug=aug_path, base_folder_orig=orig_path)
     test_data = dataset.dataset_test
     test_loader = DataLoader(test_data, batch_size=BATCH_SIZE, shuffle=False)
@@ -76,13 +75,15 @@ def main():
     # model LeNet
     model = LeNet(num_classes=NUM_CLASSES)
 
-    model.load_state_dict(torch.load("trained_model4.pth"))
+    # Memuat model dengan aman (menambahkan weights_only=True untuk mencegah potensi masalah di masa depan)
+    model.load_state_dict(torch.load("trained_model4.pth", map_location=torch.device('cpu'), weights_only=True))  # map_location jika Anda menggunakan CPU
+
     model.eval()
 
     # Evaluasi model pada data test
     accuracy, precision, recall, f1, auc, cm = evaluate_model(model, test_loader)
 
-    # hasil evaluasi
+    # Hasil evaluasi
     print("Evaluasi pada data test:")
     print(f"Accuracy: {accuracy:.4f}")
     print(f"Precision: {precision:.4f}")
@@ -93,9 +94,9 @@ def main():
     print(cm)
 
     # Visualisasi Confusion Matrix sebagai Heatmap
-    class_names = ["Chickenpox", "Cowpox", "Healthy", "HFMD", "Measles", "Monkeypox"] 
-    plot_confusion_matrix(cm, class_names, save_path="./confusion_matrix.png")
-  
+    class_names = ["Chickenpox", "Cowpox", "Healthy", "HFMD", "Measles", "Monkeypox"]  # Ganti sesuai nama kelas
+    plot_confusion_matrix(cm, class_names, save_path="./testing_confusion_matrix.png")
+    # print("Confusion Matrix heatmap saved as confusion_matrix.png")
 
 if __name__ == "__main__":
     main()
